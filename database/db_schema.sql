@@ -48,15 +48,7 @@ CREATE TABLE difficulty_levels (
   description TEXT
 );
 
--- EMBEDDINGS (new table for storing vector embeddings)
-CREATE TABLE embeddings (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-  material_id UUID REFERENCES course_materials(id) ON DELETE CASCADE,
-  embedding VECTOR(1024),  -- For Mistral AI mistral-embed (1024 dimensions)
-  created_at TIMESTAMP DEFAULT NOW()
-);
-
--- COURSE MATERIALS (updated to reference embeddings table)
+-- COURSE MATERIALS (embedding_id defined without foreign key initially)
 CREATE TABLE course_materials (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   course_id UUID REFERENCES courses(id) ON DELETE CASCADE,
@@ -64,10 +56,23 @@ CREATE TABLE course_materials (
   material_name TEXT NOT NULL,
   file_path TEXT NOT NULL,
   file_type TEXT,
-  embedding_id UUID REFERENCES embeddings(id),
+  embedding_id UUID, -- No REFERENCES clause here yet
   uploaded_at TIMESTAMP DEFAULT NOW(),
   uploaded_by UUID REFERENCES users(id)
 );
+
+-- EMBEDDINGS
+CREATE TABLE embeddings (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  material_id UUID REFERENCES course_materials(id) ON DELETE CASCADE,
+  embedding VECTOR(1024),  -- For Mistral AI mistral-embed (1024 dimensions)
+  created_at TIMESTAMP DEFAULT NOW()
+);
+
+-- Add foreign key constraint for embedding_id after embeddings table is created
+ALTER TABLE course_materials
+ADD CONSTRAINT fk_embedding_id
+FOREIGN KEY (embedding_id) REFERENCES embeddings(id);
 
 -- GENERATION REQUESTS
 CREATE TABLE generation_requests (
@@ -164,32 +169,6 @@ BEGIN
     RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
-
--- Triggers for updated_at
-CREATE TRIGGER update_users_updated_at
-    BEFORE UPDATE ON users
-    FOR EACH ROW
-    EXECUTE FUNCTION update_updated_at_column();
-
-CREATE TRIGGER update_courses_updated_at
-    BEFORE UPDATE ON courses
-    FOR EACH ROW
-    EXECUTE FUNCTION update_updated_at_column();
-
-CREATE TRIGGER update_topics_updated_at
-    BEFORE UPDATE ON topics
-    FOR EACH ROW
-    EXECUTE FUNCTION update_updated_at_column();
-
-CREATE TRIGGER update_questions_updated_at
-    BEFORE UPDATE ON questions
-    FOR EACH ROW
-    EXECUTE FUNCTION update_updated_at_column();
-
-CREATE TRIGGER update_generated_questions_updated_at
-    BEFORE UPDATE ON generated_questions
-    FOR EACH ROW
-    EXECUTE FUNCTION update_updated_at_column();
 
 -- Indexes for performance
 CREATE INDEX idx_courses_created_by ON courses (created_by);
