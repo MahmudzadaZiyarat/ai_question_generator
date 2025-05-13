@@ -13,9 +13,6 @@ INSERT INTO test_vectors (embedding) VALUES ('[0.1, 0.2, 0.3, 0.4, 0.5]');
 -- Verify it worked
 SELECT * FROM test_vectors;
 
--- Insert sample data into your main tables
--- (Note: For real use, you'll want to populate with actual 1024-dimension vectors)
-
 -- Add sample users
 INSERT INTO users (name, email, password_hash, role) 
 VALUES ('Admin User', 'admin@example.com', 'hashed_password', 'admin');
@@ -55,7 +52,6 @@ VALUES (
 );
 
 -- For testing the main schema, we can use a zero vector of the correct dimension
--- but in real use, you'd generate proper embeddings
 CREATE OR REPLACE FUNCTION create_zero_vector(dim INTEGER) 
 RETURNS vector AS $$
 DECLARE
@@ -77,5 +73,5 @@ VALUES (1, create_zero_vector(1024));
 -- Update course_materials to reference this embedding
 UPDATE course_materials SET embedding_id = 1 WHERE id = 1;
 
--- Print some verification data
+-- Print verification data
 SELECT 'Database initialized successfully!' AS status;
