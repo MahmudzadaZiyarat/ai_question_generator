@@ -28,6 +28,26 @@ An intelligent system for automatically generating high-quality, context-aware, 
    git clone https://github.com/MahmudzadaZiyarat/ai-math-question-generator
    cd ai-math-question-generator
 
+2. **Create and activate a virtual environment**
+   # Create virtual environment
    python -m venv math_venv
-   source math_venv/bin/activate  # On Windows use `math_venv\Scripts\activate`
+
+   # Activate virtual environment
+   # On Windows:
+   math_venv\Scripts\activate
+
+   # On macOS/Linux:
+   source math_venv/bin/activate
+
+
+3. **Install python packages**  
    pip install -r requirements.txt
+
+
+4. **Download required NLP models**  
+   # Download spaCy English model
+   python -m spacy download en_core_web_sm
+
+# Download NLTK punkt tokenizer
+   python -c "import nltk; nltk.download('punkt')"
+
